@@ -7,7 +7,7 @@
 //
 
 #import "GraphView.h"
-#import "MBProgressHUD.h"
+#import "ASProgressHUD.h"
 
 #define ANIMATION_DURATION	0.4
 
@@ -61,8 +61,6 @@
 		titleLabel.textAlignment = NSTextAlignmentCenter;
 		titleLabel.textColor = [UIColor grayColor];
 		titleLabel.backgroundColor = [UIColor clearColor];
-		titleLabel.shadowColor = [UIColor whiteColor];
-		titleLabel.shadowOffset = CGSizeMake(0.0f, 1.0f);
 		[self addSubview:titleLabel];
 		
 		self.sectionLabelButton = [UIButton buttonWithType:UIButtonTypeCustom];
@@ -128,20 +126,20 @@
 - (void)lockScale:(UILongPressGestureRecognizer *)recognizer {
 	if (recognizer.state == UIGestureRecognizerStateBegan) {
 		maxLocked = !maxLocked;
-		[MBProgressHUD hideHUDForView:self animated:YES];
+		[ASProgressHUD hideHUDForView:self animated:YES];
 		
-		MBProgressHUD *hud = [[MBProgressHUD alloc] initWithView:self];
+		ASProgressHUD *hud = [[ASProgressHUD alloc] initWithView:self];
 		hud.animationType = MBProgressHUDAnimationZoom;
 		hud.customView = [[UIImageView alloc] initWithImage:[UIImage imageNamed:(maxLocked ? @"Lock" : @"Unlock")]];
 		hud.mode = MBProgressHUDModeCustomView;
 		if (maxLocked) {
-			hud.labelText = NSLocalizedString(@"Scale locked", nil);
+			hud.label.text = NSLocalizedString(@"Scale locked", nil);
 		} else {
-			hud.labelText = NSLocalizedString(@"Scale unlocked", nil);
+			hud.label.text = NSLocalizedString(@"Scale unlocked", nil);
 		}
 		hud.userInteractionEnabled = NO;
 		[self addSubview:hud];
-		[hud show:YES];
+		[hud showAnimated:YES];
 		
 		lockIndicatorView.hidden = !maxLocked;
 		if (!maxLocked) {
@@ -154,7 +152,7 @@
 }
 
 - (void)hideHUD {
-	[MBProgressHUD hideHUDForView:self animated:YES];
+	[ASProgressHUD hideHUDForView:self animated:YES];
 }
 
 - (void)barSelected:(StackedBarView *)barView {
@@ -323,8 +321,6 @@
 			dateLabel.autoresizingMask = UIViewAutoresizingFlexibleTopMargin;
 			dateLabel.backgroundColor = [UIColor clearColor];
 			dateLabel.textColor = [UIColor darkGrayColor];
-			dateLabel.shadowColor = [UIColor whiteColor];
-			dateLabel.shadowOffset = CGSizeMake(0.0f, 1.0f);
 			dateLabel.textAlignment = NSTextAlignmentCenter;
 			dateLabel.font = [UIFont systemFontOfSize:12.0f weight:UIFontWeightSemibold];
 			dateLabel.adjustsFontSizeToFitWidth = YES;
@@ -418,8 +414,6 @@
 		label.adjustsFontSizeToFitWidth = YES;
 		label.textAlignment = NSTextAlignmentCenter;
 		label.textColor = [UIColor darkGrayColor];
-		label.shadowColor = [UIColor whiteColor];
-		label.shadowOffset = CGSizeMake(0, 1);
 		[self addSubview:label];
 	}
 	return self;
@@ -631,8 +625,6 @@
 		label.backgroundColor = [UIColor clearColor];
 		label.font = [UIFont systemFontOfSize:12.0f weight:UIFontWeightSemibold];
 		label.textColor = [UIColor darkGrayColor];
-		label.shadowColor = [UIColor whiteColor];
-		label.shadowOffset = CGSizeMake(0.0f, 1.0f);
 		label.textAlignment = NSTextAlignmentRight;
 		label.adjustsFontSizeToFitWidth = YES;
 		[self addSubview:label];

@@ -33,9 +33,9 @@ NSString *const kITCAuthSessionAction = @"/v1/session";
 
 // iTunes Connect Reporter API
 NSString *const kITCRBaseURL                 = @"https://reportingitc2.apple.com";
-NSString *const kITCRGenerateCSRFTokenAction = @"/gsf/csrftoken";
-NSString *const kITCRGetAccessKeyAction      = @"/api/getAccessKey";
-NSString *const kITCRResetAccessKeyAction    = @"/api/resetAccessKey";
+NSString *const kITCRGenerateCSRFTokenAction = @"/gsf/owasp/csrf-guard.js";
+NSString *const kITCRGetAccessKeyAction      = @"/gsf/salesTrendsApp/businessareas/InternetServices/subjectareas/iTunes/proxy/getAccessKey";
+NSString *const kITCRResetAccessKeyAction    = @"/gsf/salesTrendsApp/businessareas/InternetServices/subjectareas/iTunes/proxy/resetAccessKey";
 
 // iTunes Connect Reporter API Headers
 NSString *const kITCRXRequestedWithKey   = @"X-Requested-With";
@@ -409,14 +409,14 @@ NSString *const kITCPaymentVendorsPaymentAction = @"/ra/paymentConsolidation/pro
 	NSURL *generateCSRFTokenURL = [NSURL URLWithString:[kITCRBaseURL stringByAppendingString:kITCRGenerateCSRFTokenAction]];
 	NSMutableURLRequest *generateRequest = [NSMutableURLRequest requestWithURL:generateCSRFTokenURL];
 	[generateRequest setHTTPMethod:@"GET"];
-	[generateRequest setValue:kITCRXRequestedWithValue forHTTPHeaderField:kITCRXRequestedWithKey];
 	NSHTTPURLResponse *generateResponse = nil;
 	NSData *generateData = [NSURLConnection sendSynchronousRequest:generateRequest returningResponse:&generateResponse error:nil];
-	NSDictionary *generateDict = [NSJSONSerialization JSONObjectWithData:generateData options:0 error:nil];
-	NSString *status = generateDict[@"status"];
-	if ((status != nil) && [status isEqualToString:@"success"]) {
-		return generateDict[@"result"];
-	}
+    NSString *generateString = [[NSString alloc] initWithData:generateData encoding:NSUTF8StringEncoding];
+    if ([generateString containsString:@"this.setRequestHeader(\"CSRF\", \""])
+    {
+        NSString *result = [generateString substringWithRange:NSMakeRange([generateString rangeOfString:@"this.setRequestHeader(\"CSRF\", \""].location + 31, 159)];
+        return result;
+    }
 	return nil;
 }
 
@@ -429,14 +429,20 @@ NSString *const kITCPaymentVendorsPaymentAction = @"/ra/paymentConsolidation/pro
 	NSHTTPURLResponse *getResponse = nil;
 	NSData *getData = [NSURLConnection sendSynchronousRequest:getRequest returningResponse:&getResponse error:nil];
 	NSDictionary *getDict = [NSJSONSerialization JSONObjectWithData:getData options:0 error:nil];
-	NSString *status = getDict[@"status"];
-	if ((status != nil) && [status isEqualToString:@"success"]) {
-		NSMutableDictionary *resultDict = [[NSMutableDictionary alloc] init];
-		resultDict[@"accessKey"] = getDict[@"accessKey"];
-		resultDict[@"createdDate"] = [dateFormatter dateFromString:getDict[@"createdDate"]];
-		resultDict[@"expiryDate"] = [dateFormatter dateFromString:getDict[@"expiryDate"]];
-		return resultDict;
-	}
+    NSString *status = getDict[@"status"];
+    if ((status != nil) && [status isEqualToString:@"success"]) {
+        if (getDict[@"result"]) {
+            NSDictionary *result = getDict[@"result"];
+            if (result[@"data"]) {
+                NSDictionary *data = result[@"data"];
+                NSMutableDictionary *resultDict = [[NSMutableDictionary alloc] init];
+                resultDict[@"accessKey"] = data[@"accessKey"];
+                resultDict[@"createdDate"] = [dateFormatter dateFromString:data[@"createdDate"]];
+                resultDict[@"expiryDate"] = [dateFormatter dateFromString:data[@"expiryDate"]];
+                return resultDict;
+            }
+        }
+    }
 	return nil;
 }
 
@@ -449,15 +455,21 @@ NSString *const kITCPaymentVendorsPaymentAction = @"/ra/paymentConsolidation/pro
 	NSHTTPURLResponse *resetResponse = nil;
 	NSData *resetData = [NSURLConnection sendSynchronousRequest:resetRequest returningResponse:&resetResponse error:nil];
 	NSDictionary *resetDict = [NSJSONSerialization JSONObjectWithData:resetData options:0 error:nil];
-	NSString *status = resetDict[@"status"];
-	if ((status != nil) && [status isEqualToString:@"success"]) {
-		NSMutableDictionary *resultDict = [[NSMutableDictionary alloc] init];
-		resultDict[@"accessKey"] = resetDict[@"accessKey"];
-		resultDict[@"createdDate"] = [dateFormatter dateFromString:resetDict[@"createdDate"]];
-		resultDict[@"expiryDate"] = [dateFormatter dateFromString:resetDict[@"expiryDate"]];
-		return resultDict;
-	}
-	return nil;
+    NSString *status = resetDict[@"status"];
+    if ((status != nil) && [status isEqualToString:@"success"]) {
+        if (resetDict[@"result"]) {
+            NSDictionary *result = resetDict[@"result"];
+            if (result[@"data"]) {
+                NSDictionary *data = result[@"data"];
+                NSMutableDictionary *resultDict = [[NSMutableDictionary alloc] init];
+                resultDict[@"accessKey"] = data[@"accessKey"];
+                resultDict[@"createdDate"] = [dateFormatter dateFromString:data[@"createdDate"]];
+                resultDict[@"expiryDate"] = [dateFormatter dateFromString:data[@"expiryDate"]];
+                return resultDict;
+            }
+        }
+    }
+    return nil;
 }
 
 @end

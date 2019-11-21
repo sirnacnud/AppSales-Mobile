@@ -21,13 +21,29 @@
 }
 
 - (void)drawRect:(CGRect)rect {
+    UIColor *labelColor;
+    UIColor *backgroundColor;
+    UIColor *headerFooterColor;
+    UIColor *separatorColor;
+    if (@available(iOS 13.0, *)) {
+        labelColor = [UIColor labelColor];
+        backgroundColor = [UIColor tertiarySystemBackgroundColor];
+        headerFooterColor = [UIColor secondarySystemBackgroundColor];
+        separatorColor = [UIColor separatorColor];
+    } else {
+        labelColor = [UIColor blackColor];
+        backgroundColor = [UIColor whiteColor];
+        headerFooterColor = [UIColor colorWithWhite:0.95 alpha:1.0];
+        separatorColor = [UIColor colorWithRed:0.8 green:0.8 blue:0.8 alpha:0.8];
+    }
+    
 	BOOL iPad = [UIDevice currentDevice].userInterfaceIdiom == UIUserInterfaceIdiomPad;
 	CGContextRef c = UIGraphicsGetCurrentContext();
 	CGContextSaveGState(c);
 
 	CGFloat margin = 10.0;
 	CGContextSetShadowWithColor(c, CGSizeMake(0, 1.0), 6.0, [[UIColor blackColor] CGColor]);
-	CGContextSetRGBFillColor(c, 1.0, 1.0, 1.0, 1.0);
+    [backgroundColor set];
 	CGContextFillRect(c, CGRectInset(self.bounds, margin, margin));
 
 	CGContextRestoreGState(c);
@@ -37,7 +53,9 @@
 	CGFloat monthsHeight = self.bounds.size.height - 2 * margin - headerHeight - footerHeight;
 	CGFloat singleMonthHeight = monthsHeight / 4;
 	CGFloat singleMonthWidth = (self.bounds.size.width - 2 * margin) / 3.0;
-	CGContextSetRGBFillColor(c, 0.8, 0.8, 0.8, 1.0);
+    
+    // Draw month separators
+    [separatorColor set];
 	for (int i=0; i<5; i++) {
 		CGFloat y = margin + headerHeight + i * (monthsHeight / 4.0);
 		CGContextFillRect(c, CGRectMake(margin, (int)y, self.bounds.size.width - 2 * margin, 1));
@@ -46,16 +64,19 @@
 		CGFloat x = margin + i * ((self.bounds.size.width - 2 * margin) / 3.0);
 		CGContextFillRect(c, CGRectMake((int)x, margin + headerHeight, 1, self.bounds.size.height - 2 * margin - headerHeight - footerHeight));
 	}
+    
+    // Draw header
 	CGRect yearRect = CGRectMake(margin, margin, self.bounds.size.width - 2 * margin, headerHeight);
-	[[UIColor colorWithWhite:0.95 alpha:1.0] set];
+	[headerFooterColor set];
 	CGContextFillRect(c, yearRect);
 	yearRect.origin.y += 10;
 	[[UIColor darkGrayColor] set];
 	UIFont *yearFont = [UIFont boldSystemFontOfSize:27];
 	NSMutableParagraphStyle *style = [NSMutableParagraphStyle new];
 	[style setAlignment:NSTextAlignmentCenter];
-	[[NSString stringWithFormat:@"%li", (long)year] drawInRect:yearRect withAttributes:@{NSFontAttributeName : yearFont,
-																				  NSParagraphStyleAttributeName : style}];
+	[[NSString stringWithFormat:@"%li", (long)year] drawInRect:yearRect withAttributes:@{NSFontAttributeName: yearFont,
+                                                                                         NSForegroundColorAttributeName: labelColor,
+                                                                                         NSParagraphStyleAttributeName: style}];
 
 	NSDateFormatter *monthFormatter = [[NSDateFormatter alloc] init];
 	[monthFormatter setDateFormat:@"MMMM"];
@@ -70,12 +91,13 @@
 	CGFloat maxPaymentFontSize = iPad ? 24 : 16;
 
 	for (int i=0; i<12; i++) {
+        // Draw month label
 		CGRect monthRect = CGRectInset(CGRectMake((margin + (i % 3) * singleMonthWidth),
 												  (margin + headerHeight + (i / 3) * singleMonthHeight),
 												  singleMonthWidth,
 												  singleMonthHeight), 7, 5);
 		if (currentYear == year && currentMonth == i + 1) {
-			[[UIColor colorWithRed:0.698 green:0.804 blue:0.871 alpha:0.3] set];
+            [[self.tintColor colorWithAlphaComponent:0.1] set];
 			CGContextFillRect(c, CGRectInset(monthRect, -7, -5));
 			[[UIColor darkGrayColor] set];
 		}
@@ -86,8 +108,10 @@
 		NSMutableParagraphStyle *style = [NSMutableParagraphStyle new];
 		style.alignment = NSTextAlignmentLeft;
 		[month drawInRect:monthRect withAttributes:@{NSFontAttributeName: monthFont,
+                                                     NSForegroundColorAttributeName: labelColor,
 													 NSParagraphStyleAttributeName: style}];
 
+        // Draw earning label
 		NSMutableAttributedString *label = labelsByMonth[@(i + 1)];
 		if (label) {
 			CGSize size = CGSizeMake(FLT_MAX, FLT_MAX);
@@ -102,15 +126,22 @@
 			NSMutableParagraphStyle *labelStyle = [NSMutableParagraphStyle new];
 			labelStyle.alignment = NSTextAlignmentCenter;
 			[label addAttributes:@{NSFontAttributeName: [UIFont boldSystemFontOfSize:fontSize],
-			NSParagraphStyleAttributeName: labelStyle} range:NSMakeRange(0, label.length)];
+                                   NSParagraphStyleAttributeName: labelStyle}
+                           range:NSMakeRange(0, label.length)];
 			[label drawInRect:labelRect];
 		}
 	}
 
-	CGRect footerRect = CGRectMake(margin, self.bounds.size.height - footerHeight + 3, self.bounds.size.width - 2 * margin, 20);
+    
+    // Draw Footer
+	CGRect footerRect = CGRectMake(margin, self.bounds.size.height - footerHeight - margin + 1, self.bounds.size.width - 2 * margin, footerHeight);
+    [headerFooterColor set];
+    CGContextFillRect(c, footerRect);
+    footerRect.origin.y += 10;
 	NSMutableParagraphStyle *style2 = [NSMutableParagraphStyle new];
 	style2.alignment = NSTextAlignmentCenter;
 	[self.footerText drawInRect:footerRect withAttributes:@{NSFontAttributeName: [UIFont boldSystemFontOfSize:14.0],
+                                                            NSForegroundColorAttributeName: labelColor,
 															NSParagraphStyleAttributeName: style2}];
 
 }

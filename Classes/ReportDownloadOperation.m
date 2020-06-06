@@ -330,7 +330,7 @@ static NSString *NSStringPercentEscaped(NSString *string) {
 
 				if (self.isCancelled) {
 					[self completeDownloadWithStatus:NSLocalizedString(@"Canceled", nil)];
-				} else if (sapVendors.count > 0) {
+				} else if ((sapVendors != nil) && ![sapVendors isEqual:[NSNull null]] && (sapVendors.count > 0)) {
 					if (downloadedVendors == nil) {
 						downloadedVendors = [[NSMutableDictionary alloc] init];
 					} else {
@@ -432,7 +432,7 @@ static NSString *NSStringPercentEscaped(NSString *string) {
 				if (self.isCancelled) {
 					[self completeDownloadWithStatus:NSLocalizedString(@"Canceled", nil)];
 					break;
-				} else if (paymentSummaries.count == 0) {
+				} else if ((paymentSummaries == nil) || [paymentSummaries isEqual:[NSNull null]] || (paymentSummaries.count == 0)) {
 					@synchronized(downloadedVendors) {
 						NSInteger count = [downloadedVendors[vendorID] integerValue];
 						count++;
@@ -450,9 +450,9 @@ static NSString *NSStringPercentEscaped(NSString *string) {
 
 					BOOL hasOnePaymentSummary = NO;
 					for (NSDictionary *payment in paymentSummaries) {
-                        if (payment[@"paidOrExpectingPaymentDate"] == [NSNull null]) {
-                            continue;
-                        }
+						if (payment[@"paidOrExpectingPaymentDate"] == [NSNull null]) {
+							continue;
+						}
 						NSDate *paidOrExpectedDate = [dateFormatter dateFromString:payment[@"paidOrExpectingPaymentDate"]];
 						if (paidOrExpectedDate == nil) {
 							// This payment is neither paid nor expected. Ignore it.

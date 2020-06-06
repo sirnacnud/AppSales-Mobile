@@ -565,7 +565,11 @@
 			return [UIColor colorWithRed:0.843 green:0.278 blue:0.282 alpha:1.0];
 		}
 	}
-	return [UIColor darkGrayColor];
+	if (@available(iOS 13.0, *)) {
+		return [UIColor secondaryLabelColor];
+	} else {
+		return [UIColor darkGrayColor];
+	}
 }
 
 - (NSString *)graphView:(GraphView *)graphView labelForBarAtIndex:(NSUInteger)index {

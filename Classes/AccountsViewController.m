@@ -161,8 +161,6 @@
 	UINavigationController *aboutNavController = [[UINavigationController alloc] initWithRootViewController:aboutViewController];
 	if ([UIDevice currentDevice].userInterfaceIdiom == UIUserInterfaceIdiomPad) {
 		aboutNavController.modalPresentationStyle = UIModalPresentationFormSheet;
-	} else {
-		aboutNavController.modalTransitionStyle = UIModalTransitionStyleFlipHorizontal;
 	}
 	[self presentViewController:aboutNavController animated:YES completion:nil];
 }
@@ -224,6 +222,7 @@
 		cell.textLabel.text = NSLocalizedString(@"Sales and Trends", nil);
 		cell.badgeCount = badge;
 		cell.imageName = @"Sales";
+        
 	} else if (indexPath.row == 1) {
 		NSInteger badge = [[self.accounts[indexPath.section] paymentsBadge] integerValue];
 		cell.textLabel.text = NSLocalizedString(@"Payments", nil);
@@ -652,7 +651,7 @@
 		[self doExport];
 	} else if ([key hasPrefix:@"product.appstore."]) {
 		NSString *productID = [key substringFromIndex:[@"product.appstore." length]];
-		NSString *appStoreURLString = [NSString stringWithFormat:@"https://itunes.apple.com/app/id%@", productID];
+		NSString *appStoreURLString = [NSString stringWithFormat:@"https://apps.apple.com/app/id%@", productID];
 		// Create product dict to check what kind of app were looking at.
 		NSMutableDictionary *productsByID = [NSMutableDictionary dictionary];
 		for (Product *product in self.selectedAccount.products) {
@@ -661,7 +660,7 @@
 		// Check if app is a bundle.
 		Product *product = productsByID[productID];
 		if ([product.platform.lowercaseString containsString:@"bundle"]) {
-			appStoreURLString = [NSString stringWithFormat:@"https://itunes.apple.com/app-bundle/id%@", productID];
+			appStoreURLString = [NSString stringWithFormat:@"https://apps.apple.com/app-bundle/id%@", productID];
 		}
 		UIApplication *application = [UIApplication sharedApplication];
 		[application openURL:[NSURL URLWithString:appStoreURLString]];
